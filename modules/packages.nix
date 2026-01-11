@@ -32,5 +32,12 @@
     zoxide
     gnupg
     libpq     # postgres client libs
+    
+    # Rust
+    rustc
+    cargo
+    rustfmt
+    dioxus-cli
+    rustup
   ];
 }

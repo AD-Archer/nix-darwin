@@ -1,6 +1,6 @@
 #!/bin/sh
 # Simple wrapper script for darwin-rebuild using nix run
-# Usage: ./rebuild.sh [switch|build|check] [--verbose]
+# Usage: .scripts/rebuild.sh [switch|build|check] [--verbose]
 
 # Default action is switch if none provided
 ACTION=${1:-switch}

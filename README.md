@@ -12,8 +12,8 @@ This repository contains a simple **Nix configuration** for installing essential
 1. Ensure you have **Nix** installed on your system.
 2. Clone this repository:
    ```sh
-   git clone https://github.com/ad-archer/nix-darwin.git
-   cd nix-darwin
+   sudo git clone https://github.com/ad-archer/nix-darwin.git /etc/nixos
+   cd /etc/nixos
    ```
 3. Since this setup is mainly designed for **Nix Darwin**, research how to properly use **Nix Flakes** and **Nix Darwin** to apply this configuration.
 

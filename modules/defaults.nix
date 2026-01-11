@@ -20,7 +20,7 @@
     claer = "clear";
     npm = "pnpm";
     cd = "z";
-    rebuild = "cd /etc/nix && sudo darwin-rebuild switch --flake ~/nix#mac";
+    rebuild = "cd /etc/nix && sudo ./scripts/rebuild.sh switch --verbose";
   };
 
   # Powerlevel10k ZSH theme configuration and other zsh setup
