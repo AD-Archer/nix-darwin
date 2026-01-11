@@ -3,18 +3,15 @@
   description = "My macbook flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nix-darwin = {
-      url = "github:LnL7/nix-darwin/master";
+      url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    # Declarative tap management
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
@@ -26,6 +23,11 @@
     homebrew-bundle = {
       url = "github:homebrew/homebrew-bundle";
       flake = false;
+    };
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -39,51 +41,8 @@
     configModule = { config, pkgs, ... }: {
       nixpkgs.config.allowUnfree = true;
 
-      # System activation scripts to check for Homebrew before installation
-      system.activationScripts.preActivation.text = ''
-        # Check if Homebrew is already installed
-        if [ -f "/opt/homebrew/bin/brew" ] || [ -f "/usr/local/bin/brew" ]; then
-          echo "Homebrew is already installed. Skipping installation."
-          export HOMEBREW_ALREADY_INSTALLED=1
-        else
-          echo "Homebrew not found. Installing Homebrew..."
-          export HOMEBREW_ALREADY_INSTALLED=0
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          
-          # Make sure homebrew is in the PATH for the current script
-          if [ -f "/opt/homebrew/bin/brew" ]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-          elif [ -f "/usr/local/bin/brew" ]; then
-            eval "$(/usr/local/bin/brew shellenv)"
-          fi
-        fi
-      '';
-
       # Setup scripts for Sketchybar and NvChad
       system.activationScripts.postActivation.text = ''
-        # Remove Sketchybar configuration files
-        if [ -d "$HOME/.config/sketchybar" ]; then
-          echo "Removing Sketchybar configuration..."
-          rm -rf "$HOME/.config/sketchybar"
-        fi
-        
-        # Stop Sketchybar service if it's running and uninstall it
-        if command -v brew >/dev/null 2>&1; then
-          if brew services list | grep -q sketchybar; then
-            echo "Stopping Sketchybar service..."
-            brew services stop sketchybar
-          fi
-          
-          if brew list | grep -q sketchybar; then
-            echo "Uninstalling Sketchybar..."
-            brew uninstall sketchybar
-          fi
-        fi
-        
-        # Reset menu bar settings to default
-        defaults delete com.apple.menuextra 2>/dev/null || true
-        killall SystemUIServer 2>/dev/null || true
-        
         # Create a separate script for NvChad setup that will run at first login
         mkdir -p "$HOME/.config/nixpkgs"
         cat > "$HOME/.config/nixpkgs/setup-nvchad.sh" << 'EOF'
@@ -128,9 +87,11 @@ fi
         };
         global = {
           brewfile = true;
-          lockfiles = true;
+          lockfiles = false;  # Disable lockfiles - --no-lock is deprecated in newer brew
         };
         taps = [
+          "siderolabs/tap"
+          "tw93/tap"
           # "FelixKratz/formulae" # Removed Sketchybar tap
           # "homebrew/cask-fonts" # This tap is deprecated according to Homebrew
         ];
@@ -163,46 +124,57 @@ fi
           "rsync"
           "neofetch"
           "ollama"
+          "fastfetch"
+          "figlet"
+          "gcc"
+          "gemini-cli"
+          "gnupg"
+          "infisical"
+          "libpq"
+          "opencode"
+          "pnpm"
+          "siderolabs/tap/talosctl"
+          "tw93/tap/mole"
+          "uv"
+          "zoxide"
           # Removed Sketchybar
         ];
         casks = [
           # Utilities
-          "cheatsheet"
           "altserver"
-          "malwarebytes"
           "mist"
           "vlc"
-          "ghostty"  
+          "ghostty"
           "obs"
           "latest"
           "the-unarchiver"
-          "qbittorrent"
           "tailscale"
-          "ghostty"
-          "mullvadvpn"
           "raycast"       # Productivity
-          "stats"         # System monitoring
           "appcleaner"    # App uninstaller
-          "balenaetcher"  # USB image writer
-          "spotify"
           "zoom"
-          "discord"
-          "microsoft-teams"
+          "dbvisualizer"
+          "gimp"
+          "iina"
+          "jordanbaird-ice"
+          "lens"
+          "obsidian"
+          "postman"
+          "raspberry-pi-imager"
+          "slack"
+          "transmission"
+          "vesktop"
+          "vivaldi"
 
           # Fonts for development
-          "font-jetbrains-mono-nerd-font"  # JetBrains Mono Nerd Font for NvChad
-          "sf-symbols"    # Keeping SF Symbols as it's generally useful
+          "font-jetbrains-mono-nerd-font"      # JetBrains Mono Nerd Font for NvChad
+          "font-fira-mono-nerd-font"           # Fira Mono Nerd Font
+          "sf-symbols"                         # Keeping SF Symbols as it's generally useful
         ];
         masApps = {
-          "AnkiApp-Flashcards" = 1366312254;
-          "eero" = 1498025513;
-          "Slack" = 803453959;
+          # "AnkiApp-Flashcards" = 1366312254;  # No longer available in App Store
+          # "eero" = 1498025513;  # No longer available in App Store
           "bitwarden"= 1352778147;
-          "live-wallpapers"= 1552826194;
-          "wireguard"=1451685025;
-          "outlook"=985367838;
-          "outlook"= 985367838;
-
+          # "live-wallpapers"= 1552826194;
         };
       };
 
@@ -215,25 +187,23 @@ fi
       ];
 
       # Improved application linking
-      system.activationScripts.applications = {
-        text = let
-          env = pkgs.buildEnv {
-            name = "system-applications";
-            paths = config.environment.systemPackages;
-            pathsToLink = "/Applications";
-          };
-        in ''
-          echo "Setting up /Applications..." >&2
-          rm -rf /Applications/Nix\ Apps
-          mkdir -p /Applications/Nix\ Apps
-          find ${env}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
-          while read -r src; do
-            app_name=$(basename "$src")
-            echo "Copying $src" >&2
-            ${pkgs.mkalias}/bin/mkalias "$src" "/Applications/Nix Apps/$app_name"
-          done
-        '';
-      };
+      system.activationScripts.applications.text = let
+        env = pkgs.buildEnv {
+          name = "system-applications";
+          paths = config.environment.systemPackages;
+          pathsToLink = [ "/Applications" ];
+        };
+      in ''
+        echo "Setting up /Applications..." >&2
+        rm -rf /Applications/Nix\ Apps
+        mkdir -p /Applications/Nix\ Apps
+        find ${env}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
+        while read -r src; do
+          app_name=$(basename "$src")
+          echo "Copying $src" >&2
+          ${pkgs.mkalias}/bin/mkalias "$src" "/Applications/Nix Apps/$app_name"
+        done
+      '';
 
       # Enhanced system defaults for better Mac experience
       system.defaults = {
@@ -243,7 +213,7 @@ fi
           show-recents = false;
           mru-spaces = false;
           minimize-to-application = true;
-          orientation = "bottom";
+          orientation = "right";
           tilesize = 48;
         };
         
@@ -261,7 +231,7 @@ fi
         # Trackpad settings
         trackpad = {
           Clicking = true;
-          TrackpadThreeFingerDrag = true;
+          TrackpadThreeFingerDrag = false;
           TrackpadRightClick = true;
         };
         
@@ -302,7 +272,7 @@ fi
       # System services
       services = {
         openssh.enable = true;
-        nix-daemon.enable = true;
+        # nix-daemon.enable is now managed by nix.enable
         yabai = {
           enable = false; # Set to true if you want a tiling window manager
           package = pkgs.yabai;
@@ -333,7 +303,7 @@ fi
           pkgs.fira-code
           pkgs.nerd-fonts.fira-code
           pkgs.noto-fonts
-          pkgs.noto-fonts-emoji
+          pkgs.noto-fonts-color-emoji
         ] ++ (builtins.filter pkgs.lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts));
       };
 
@@ -357,8 +327,11 @@ fi
       system.configurationRevision = self.rev or self.dirtyRev or null;
       system.stateVersion = 6;
       
+      # Primary user for nix-darwin options that require it
+      system.primaryUser = "archer";
+      
       # Security
-      security.pam.enableSudoTouchIdAuth = true;
+      security.pam.services.sudo_local.touchIdAuth = true;
 
       # Basic shell configuration without home-manager
       environment.shellAliases = {
@@ -372,6 +345,10 @@ fi
         # Neovim aliases
         vim = "nvim";
         nv = "nvim";
+        claer = "clear";
+        npm = "pnpm";
+        cd = "z";
+
       };
       
       # Powerlevel10k ZSH theme configuration
@@ -411,23 +388,6 @@ fi
         '';
       };
 
-      # Add this to your system.activationScripts section
-      system.activationScripts.homebrewDebug = {
-        text = ''
-          echo "===== Debugging Homebrew Integration ====="
-          echo "Homebrew location: $(which brew)"
-          echo "Homebrew version: $(brew --version)"
-          mkdir -p $HOME/.config/homebrew-debug
-          # Save the environment variables for debugging
-          env | grep HOMEBREW > $HOME/.config/homebrew-debug/env.txt
-          # Check existing Homebrew directories
-          echo "Checking Homebrew directories:" >> $HOME/.config/homebrew-debug/dirs.txt
-          ls -la /opt/homebrew/Library >> $HOME/.config/homebrew-debug/dirs.txt 2>&1
-          ls -la /opt/homebrew/Library/Taps >> $HOME/.config/homebrew-debug/dirs.txt 2>&1
-          echo "Debug info saved to $HOME/.config/homebrew-debug/"
-        '';
-        deps = [];
-      };
     };
 
   in {
@@ -436,7 +396,6 @@ fi
         system = system;
         modules = [
           configModule
-          # Comment out nix-homebrew to avoid conflicts with existing installation
           # nix-homebrew.darwinModules.nix-homebrew
           # {
           #   nix-homebrew = {
@@ -446,9 +405,9 @@ fi
           #     autoMigrate = true;
           #     mutableTaps = false;
           #     taps = {
-          #       "homebrew/core" = homebrew-core;
-          #       "homebrew/cask" = homebrew-cask;
-          #       "homebrew/bundle" = homebrew-bundle;
+          #       "homebrew/homebrew-core" = homebrew-core;
+          #       "homebrew/homebrew-cask" = homebrew-cask;
+          #       "homebrew/homebrew-bundle" = homebrew-bundle;
           #     };
           #   };
           # }

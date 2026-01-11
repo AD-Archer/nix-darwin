@@ -12,4 +12,4 @@ if [ "$2" = "--verbose" ] || [ "$2" = "-v" ]; then
 fi
 
 # Run darwin-rebuild with the specified action
-nix run github:LnL7/nix-darwin/master -- $ACTION $VERBOSE --flake "$PWD#mac" 
+nix run --extra-experimental-features "nix-command flakes" github:LnL7/nix-darwin/master -- $ACTION $VERBOSE --flake "$PWD#mac" 
