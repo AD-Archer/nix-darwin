@@ -77,235 +77,21 @@ fi
 ' >> "$HOME/.zshrc"
       '';
 
-      # Homebrew configuration with all packages consolidated here
-      homebrew = {
-        enable = true;
-        onActivation = {
-          autoUpdate = true;
-          cleanup = "zap"; # Removes all unmanaged homebrew packages
-          upgrade = true;
-        };
-        global = {
-          brewfile = true;
-          lockfiles = false;  # Disable lockfiles - --no-lock is deprecated in newer brew
-        };
-        taps = [
-          "siderolabs/tap"
-          "tw93/tap"
-          # "FelixKratz/formulae" # Removed Sketchybar tap
-          # "homebrew/cask-fonts" # This tap is deprecated according to Homebrew
-        ];
-        brews = [
-          # Development tools
-          "mas"
-          "node"
-          "python@3.13"
-          "pipx"
-          "zsh-completions"
-          "bitwarden-cli"
-          "neovim"
-          "git"
-          "curl"
-          "jq"
-          "fd"
-          "fzf"
-          "bat"
-          "htop"
-          "tmux"
-          "gh"           # GitHub CLI
-          "ffmpeg"
-          "ripgrep"
-          "btop"
-          "tree"
-          "go"
-          "lua"
-          "luarocks"
-          "watch"
-          "rsync"
-          "neofetch"
-          "ollama"
-          "fastfetch"
-          "figlet"
-          "gcc"
-          "gemini-cli"
-          "gnupg"
-          "infisical"
-          "libpq"
-          "opencode"
-          "pnpm"
-          "siderolabs/tap/talosctl"
-          "tw93/tap/mole"
-          "uv"
-          "zoxide"
-          # Removed Sketchybar
-        ];
-        casks = [
-          # Utilities
-          "altserver"
-          "mist"
-          "vlc"
-          "ghostty"
-          "obs"
-          "latest"
-          "the-unarchiver"
-          "tailscale"
-          "raycast"       # Productivity
-          "appcleaner"    # App uninstaller
-          "zoom"
-          "dbvisualizer"
-          "gimp"
-          "iina"
-          "jordanbaird-ice"
-          "lens"
-          "obsidian"
-          "postman"
-          "raspberry-pi-imager"
-          "slack"
-          "transmission"
-          "vesktop"
-          "vivaldi"
-
-          # Fonts for development
-          "font-jetbrains-mono-nerd-font"      # JetBrains Mono Nerd Font for NvChad
-          "font-fira-mono-nerd-font"           # Fira Mono Nerd Font
-          "sf-symbols"                         # Keeping SF Symbols as it's generally useful
-        ];
-        masApps = {
-          # "AnkiApp-Flashcards" = 1366312254;  # No longer available in App Store
-          # "eero" = 1498025513;  # No longer available in App Store
-          "bitwarden"= 1352778147;
-          # "live-wallpapers"= 1552826194;
-        };
-      };
-
-      # System packages installed via Nix - keeping only what's necessary for system functionality
-      # and not available via Homebrew
-      environment.systemPackages = with pkgs; [
-        mkalias  # Needed for application linking
-        zsh-powerlevel10k  # For Powerlevel10k ZSH theme
-        neovim  # Add Neovim through Nix to ensure it's available during activation
-      ];
-
-      # Improved application linking
-      system.activationScripts.applications.text = let
-        env = pkgs.buildEnv {
-          name = "system-applications";
-          paths = config.environment.systemPackages;
-          pathsToLink = [ "/Applications" ];
-        };
-      in ''
-        echo "Setting up /Applications..." >&2
-        rm -rf /Applications/Nix\ Apps
-        mkdir -p /Applications/Nix\ Apps
-        find ${env}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
-        while read -r src; do
-          app_name=$(basename "$src")
-          echo "Copying $src" >&2
-          ${pkgs.mkalias}/bin/mkalias "$src" "/Applications/Nix Apps/$app_name"
-        done
-      '';
-
-      # Enhanced system defaults for better Mac experience
-      system.defaults = {
-        # Dock settings
-        dock = {
-          autohide = true;
-          show-recents = false;
-          mru-spaces = false;
-          minimize-to-application = true;
-          orientation = "right";
-          tilesize = 48;
-        };
-        
-        # Finder settings
-        finder = {
-          AppleShowAllExtensions = true;
-          FXEnableExtensionChangeWarning = false;
-          QuitMenuItem = true;
-          _FXShowPosixPathInTitle = true;
-          CreateDesktop = true;
-          ShowPathbar = true;
-          ShowStatusBar = true;
-        };
-        
-        # Trackpad settings
-        trackpad = {
-          Clicking = true;
-          TrackpadThreeFingerDrag = false;
-          TrackpadRightClick = true;
-        };
-        
-        # General UI/UX
-        NSGlobalDomain = {
-          AppleKeyboardUIMode = 3;
-          ApplePressAndHoldEnabled = false;
-          InitialKeyRepeat = 15;
-          KeyRepeat = 2;
-          NSAutomaticCapitalizationEnabled = false;
-          NSAutomaticDashSubstitutionEnabled = false;
-          NSAutomaticPeriodSubstitutionEnabled = false;
-          NSAutomaticQuoteSubstitutionEnabled = false;
-          NSAutomaticSpellingCorrectionEnabled = false;
-          NSNavPanelExpandedStateForSaveMode = true;
-          NSNavPanelExpandedStateForSaveMode2 = true;
-          "com.apple.swipescrolldirection" = false;
-          "com.apple.keyboard.fnState" = true;
-        };
-        
-        # Menu bar settings - restored to show the default menu bar
-        menuExtraClock.Show24Hour = false;
-        menuExtraClock.ShowSeconds = false;
-        
-        # For macOS Sonoma and newer - uncomment if you're on Sonoma
-        # controlCenter.AutoHide = false;
-        
         # Note: If you manually hid the menu bar before, you'll need to manually show it again:
         # For macOS Sonoma: System Settings -> Control Center -> Automatically hide and show the menu bar -> Never
         # For macOS Ventura: System Settings -> Desktop & Dock -> Automatically hide and show the menu bar -> Never
         # For Pre-Ventura: System Preferences -> Dock & Menu Bar -> Automatically hide and show the menu bar (unchecked)
         
-        loginwindow.LoginwindowText = "Archer's Macbook 215-437-2912";
-        screencapture.location = "~/Pictures/screenshots";
-        screensaver.askForPasswordDelay = 10;
-      };
+      # Replaced by ./modules/defaults.nix
+      
 
-      # System services
-      services = {
-        openssh.enable = true;
-        # nix-daemon.enable is now managed by nix.enable
-        yabai = {
-          enable = false; # Set to true if you want a tiling window manager
-          package = pkgs.yabai;
-          enableScriptingAddition = true;
-          config = {
-            layout = "bsp";
-            auto_balance = "on";
-            window_placement = "second_child";
-            window_gap = 10;
-            top_padding = 10;
-            bottom_padding = 10;
-            left_padding = 10;
-            right_padding = 10;
-            external_bar = "off"; # Menu bar is now handled by macOS
-          };
-        };
-        skhd = {
-          enable = false; # Set to true if you want keyboard shortcuts for yabai
-          package = pkgs.skhd;
-        };
-       
-      };
+      # Services moved to ./modules/services.nix
+      # See ./modules/services.nix for openssh/yabai configs
+      
 
-      # Fonts - updated to use the new nerd-fonts namespace structure
-      fonts = {
-        packages = [
-          pkgs.jetbrains-mono
-          pkgs.fira-code
-          pkgs.nerd-fonts.fira-code
-          pkgs.noto-fonts
-          pkgs.noto-fonts-color-emoji
-        ] ++ (builtins.filter pkgs.lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts));
-      };
+      # Fonts configuration moved to ./modules/fonts.nix
+      # See ./modules/fonts.nix for font packages
+      
 
       # Nix settings - updated to use the correct optimization setting
       nix = {
@@ -396,21 +182,13 @@ fi
         system = system;
         modules = [
           configModule
-          # nix-homebrew.darwinModules.nix-homebrew
-          # {
-          #   nix-homebrew = {
-          #     enable = true;
-          #     enableRosetta = true;
-          #     user = "archer";
-          #     autoMigrate = true;
-          #     mutableTaps = false;
-          #     taps = {
-          #       "homebrew/homebrew-core" = homebrew-core;
-          #       "homebrew/homebrew-cask" = homebrew-cask;
-          #       "homebrew/homebrew-bundle" = homebrew-bundle;
-          #     };
-          #   };
-          # }
+          ./modules/defaults.nix
+          ./modules/services.nix
+          ./modules/homebrew.nix
+          ./modules/activation.nix
+          ./modules/apps.nix
+          ./modules/packages.nix
+          ./modules/fonts.nix
         ];
       };
     };
@@ -421,18 +199,5 @@ fi
       program = "${nix-darwin.packages.aarch64-darwin.darwin-rebuild}/bin/darwin-rebuild";
     };
 
-    nixosConfigurations.arch = nixpkgs.lib.nixosSystem {
-      system = linuxSystem;
-      modules = [
-        ./nixos/arch.nix
-      ];
-    };
-
-    nixosConfigurations.ubuntu-server = nixpkgs.lib.nixosSystem {
-      system = linuxSystem;
-      modules = [
-        ./nixos/server.nix
-      ];
-    };
   };
 }
