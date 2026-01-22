@@ -9,6 +9,7 @@
     python3
     pipx      # python package runner
     wget
+    opencode
     btop
     tmux
     bat
@@ -21,7 +22,6 @@
     go
     lua
     luarocks
-    rustc
     rsync
     neofetch
     figlet
@@ -32,12 +32,6 @@
     zoxide
     gnupg
     libpq     # postgres client libs
-    
-    # Rust
-    rustc
-    cargo
-    rustfmt
-    dioxus-cli
-    rustup
+    uv
   ];
 }

@@ -20,6 +20,8 @@
     brews = [
       "mas"  # Mac App Store CLI - kept in Homebrew for managing MAS apps
       "mole"
+      "openssl@3"
+      "libiconv"
     ];
 
     # GUI apps (casks). Keep these as casks since they are apps (not CLI tools).
@@ -27,7 +29,7 @@
       # Media & multimedia
       "vlc"
       #"iina"
-
+      "altserver"
       # Productivity & communication
       "slack"
       "vesktop"
@@ -35,12 +37,14 @@
       "raycast"
       "postman"
       "obsidian"
+      "joplin"
       "vivaldi"
       "jordanbaird-ice"
       "visual-studio-code"
 
       # Utilities
-      "transmission"
+      "tailscale-app"
+      "obs"
       "appcleaner"                # comment out to skip
       "the-unarchiver"            # comment out to skip
       "raspberry-pi-imager"       # comment out to skip
